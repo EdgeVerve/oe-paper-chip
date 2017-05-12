@@ -1,0 +1,177 @@
+<!--
+  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
+  Bangalore, India. All Rights Reserved.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-behaviors/iron-control-state.html">
+<link rel="import" href="../paper-chip/paper-chip.html">
+<link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="../paper-input/paper-input-container.html">
+<link rel="import" href="../oe-field-behavior/oe-field-behavior.html">
+<link rel="import" href="../oe-input-error/oe-input-error.html">
+
+<!--
+A control for editing an array of strings much like a tags control.
+
+@demo demo/demo-oe-paper-chip.html
+-->
+<dom-module id="oe-paper-chip">
+  <style>
+    :host {
+      display: block;
+    }
+
+    .tags-input > paper-chip {
+      z-index: 1;
+      margin: 0;
+    }
+
+    span.required {
+      vertical-align: bottom;
+      color: var(--paper-input-container-invalid-color, --google-red-500);
+    }
+
+    paper-input-container {
+      display: inline-block;
+      width: 100%;
+    }
+
+  </style>
+  <template>
+    <paper-input-container id="tags" disabled$="[[disabled]]" invalid="[[invalid]]">
+      <label hidden$="[[!label]]">
+                <oe-i18n-msg msgid=[[label]]>[[label]]</oe-i18n-msg>
+                <template is="dom-if" if={{required}}>
+                    <span class="required"> *</span>
+                </template>
+            </label>
+      <!-- a hidden iron-input holds the bind-value value for paper-input-container -->
+      <!-- bind-value={{_dummyText}} is simply a placeholder to decide whether label is float or inline -->
+      <input is="iron-input" type="hidden" bind-value="{{_dummyText}}">
+      <div class="tags-input layout horizontal wrap">
+        <template is="dom-repeat" items={{value}}>
+          <paper-chip removable single-line on-remove="_onremove">
+            <span class="label">{{item}}</span>
+          </paper-chip>
+        </template>
+        <input id="tagInput" disabled$="[[disabled]]" type="text" class="flex">
+      </div>
+      <oe-input-error invalid={{invalid}} error-message={{errorMessage}}></oe-input-error>
+    </paper-input-container>
+  </template>
+  <script>
+    Polymer({
+      is: 'oe-paper-chip',
+      properties: {
+        value: {
+          type: Array,
+          notify: true
+        },
+        unique: {
+          type: Boolean,
+          value: false,
+          notify: true
+        },
+
+        _dummyText: {
+          type: String
+        }
+      },
+      attached: function () {
+
+        /*Strange behavior, required remains undefined and both span are visible*/
+        if (this.required == undefined || this.required === null) {
+          this.required = false;
+        }
+
+        if (this.value) {
+          if (typeof this.value === 'string') {
+            this._dummyText = this.value;
+            this.value = JSON.parse(this.value);
+          } else {
+            this._dummyText = this.value.toString();
+          }
+        }
+      },
+      listeners: {
+        'tagInput.keydown': '_keydown'
+      },
+      behaviors: [
+        Polymer.IronFormElementBehavior,
+        Polymer.PaperInputBehavior,
+        baseUtils.FieldBehavior
+      ],
+      _keydown: function (e) {
+        // var keyCode = e.key || e.keyCode || e.which;
+        if (e.keyCode === 8) {
+          var wouldBeText = e.target.value;
+          wouldBeText = wouldBeText ? wouldBeText.substr(0, wouldBeText.length - 1) : wouldBeText;
+          if (wouldBeText === '') {
+            // the string is empty , so remove a chip if present
+            if (this.value && this.value.length > 0) {
+              this.splice('value', this.value.length - 1, 1);
+              if (this.value.length == 0) {
+                this.value = undefined;
+              }
+              this._validate();
+            }
+          }
+          this._dummyText = wouldBeText || this.value;
+        } else if (e.keyCode === 13 || e.keyCode === 188 || e.keyCode === 9) {
+          var tagValue = e.target.value ? e.target.value.trim() : '';
+
+          if (tagValue !== '') {
+            if (this.value) {
+              if (!this.unique || this.value.indexOf(tagValue) < 0) {
+                this.splice('value', this.value.length, 0, tagValue);
+              }
+            } else {
+              this.value = [tagValue];
+            }
+            this._validate();
+          }
+          e.target.value = '';
+          e.preventDefault();
+
+        } else {
+          this._dummyText = e.keyCode;
+        }
+
+      },
+      _onremove: function (e) {
+        this.splice('value', e.model.index, 1);
+        if (this.value.length == 0) {
+          this.value = undefined;
+          this._dummyText = this.$.tagInput.value;
+        }
+        this._validate();
+      },
+      _validate: function () {
+
+        var isValid = true;
+        var errorKey = undefined;
+        var placeholders = undefined;
+        if (this.required && (!this.value || this.value.length == 0)) {
+          errorKey = 'valueMissing';
+          isValid = false;
+        } else if (this.max && this.value && this.value.length > this.max) {
+          errorKey = 'rangeOverflow';
+          isValid = false;
+          placeholders = [this.max];
+        } else if (this.min && (!this.value || this.value.length < this.min)) {
+          errorKey = 'rangeUnderflow';
+          isValid = false;
+          placeholders = [this.min];
+        }
+        this.setValidity(isValid, errorKey, placeholders);
+        return isValid;
+      },
+      get inputElement() {
+        return this.$.tagInput;
+      }
+    });
+
+  </script>
+</dom-module>

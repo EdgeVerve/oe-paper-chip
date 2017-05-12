@@ -1,0 +1,80 @@
+<!--
+  ©2016-2017 EdgeVerve Systems Limited (a fully owned Infosys subsidiary),
+  Bangalore, India. All Rights Reserved.
+-->
+
+<style is="custom-style" include="demo-pages-shared-styles">
+  body {
+    padding: 0;
+  }
+
+  demo-snippet.horizontal {
+    --demo-snippet-demo: {
+      @apply (--layout-horizontal);
+      @apply (--layout-justified);
+      @apply (--layout-wrap);
+    }
+  }
+
+  demo-snippet.horizontal paper-input {
+    display: inline-block;
+  }
+
+  button {
+    width: 70px;
+  }
+
+  #inputForValidation {
+    display: inline-block;
+    width: calc(100% - 75px);
+  }
+
+  .vertical-section-container {
+    max-width: 600px;
+  }
+
+  paper-icon-button {
+    color: var(--paper-red-300);
+    width: 23px;
+    height: 23px;
+    padding: 0 4px;
+
+    --paper-icon-button-ink-color: var(--paper-red-a100);
+  }
+
+  paper-item {
+    cursor: pointer;
+  }
+
+  iron-icon {
+    padding-right: 5px;
+  }
+
+  .layout-2-1 > * {
+    width: calc(50% - 16px);
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .layout-3-2-1 > * {
+    width: calc(33.33% - 16px);
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  @media only screen and (max-width: 840px) and (min-width: 600px) {
+    .layout-3-2-1 > * {
+      width: calc(50% - 16px);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .layout-2-1 > * {
+      width: calc(100% - 16px);
+    }
+
+    .layout-3-2-1 > * {
+      width: calc(100% - 16px);
+    }
+  }
+</style>
