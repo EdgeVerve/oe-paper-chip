@@ -151,17 +151,17 @@
 
   window.addEventListener('WebComponentsReady', function () {
 
-    var baseUtils = baseUtils || {};
+    var OEUtils = OEUtils || {};
 
     /* For Demo Application, Override getMetadataUrl to return static data */
-    if (baseUtils && baseUtils.ComponentFactory && baseUtils.ComponentFactory.getMetadataUrl) {
-      baseUtils.ComponentFactory.getMetadataUrl = function (metaName) {
+    if (OEUtils && OEUtils.ComponentFactory && OEUtils.ComponentFactory.getMetadataUrl) {
+      OEUtils.ComponentFactory.getMetadataUrl = function (metaName) {
         return 'data/' + metaName + '-metadata.json';
       };
     }
 
-    if (baseUtils && baseUtils.geturl) {
-      baseUtils.geturl = function (url) {
+    if (OEUtils && OEUtils.geturl) {
+      OEUtils.geturl = function (url) {
         return url;
       };
     }
