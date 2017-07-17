@@ -3,8 +3,8 @@
   "main": "oe-paper-chip.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^1.4.0",
-    "oe-input-error": "http://github.com/EdgeVerve/oe-input-error.git",
-    "oe-field-behavior": "http://github.com/EdgeVerve/oe-field-behavior.git",
+    "oe-input-error": "https://github.com/EdgeVerve/oe-input-error.git",
+    "oe-field-behavior": "https://github.com/EdgeVerve/oe-field-behavior.git",
     "paper-input": "^1.1.24",
     "iron-input": "^1.0.11",
     "paper-chip": "bendavis78/paper-chip#1.1.1"
