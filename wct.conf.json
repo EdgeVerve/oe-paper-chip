@@ -4,7 +4,7 @@
         "local": {
             "browsers": ["chrome"]
         },
-              "sauce": {
+        "sauce": {
             "disabled": true
         },
         "istanbul": {
@@ -26,7 +26,6 @@
                 "/scripts/*.js"
             ]
         }
-
     }
 }
 
