@@ -52,7 +52,7 @@ A control for editing an array of strings much like a tags control.
       <input is="iron-input" type="hidden" bind-value="{{_dummyText}}">
       <div class="tags-input layout horizontal wrap">
         <template is="dom-repeat" items={{value}}>
-          <paper-chip removable single-line on-remove="_onremove">
+          <paper-chip tabindex="-1" removable single-line on-remove="_onremove">
             <span class="label">{{item}}</span>
           </paper-chip>
         </template>
@@ -75,7 +75,10 @@ A control for editing an array of strings much like a tags control.
           value: false,
           notify: true
         },
-
+        separator: {
+          type: String,
+          value: ','
+        },
         _dummyText: {
           type: String
         }
@@ -121,7 +124,7 @@ A control for editing an array of strings much like a tags control.
             }
           }
           this._dummyText = wouldBeText || this.value;
-        } else if (e.keyCode === 13 || e.keyCode === 188 || e.keyCode === 9) {
+        } else if (e.keyCode === 13 || e.keyCode === 9 || (String.fromCharCode(e.keyCode) === this.separator)) {
           var tagValue = e.target.value ? e.target.value.trim() : '';
 
           if (tagValue !== '') {
@@ -135,7 +138,8 @@ A control for editing an array of strings much like a tags control.
             this._validate();
           }
           e.target.value = '';
-          e.preventDefault();
+          /* prevent default for separator key */
+          !(e.keyCode === 13 || e.keyCode === 9) && e.preventDefault();
 
         } else {
           this._dummyText = e.keyCode;
