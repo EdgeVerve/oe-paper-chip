@@ -67,7 +67,8 @@ A control for editing an array of strings much like a tags control.
       properties: {
         value: {
           type: Array,
-          notify: true
+          notify: true,
+          observer: '_valueChanged'
         },
         unique: {
           type: Boolean,
@@ -79,20 +80,21 @@ A control for editing an array of strings much like a tags control.
           type: String
         }
       },
+      _valueChanged: function(newVal, oldVal){
+        if (newVal) {
+          if (typeof newVal === 'string') {
+            this.value = JSON.parse(newVal);
+          } else {
+            this._dummyText = newVal.toString();
+          }
+        } else {
+          this._dummyText = '';
+        }
+      },
       attached: function () {
-
         /*Strange behavior, required remains undefined and both span are visible*/
         if (this.required == undefined || this.required === null) {
           this.required = false;
-        }
-
-        if (this.value) {
-          if (typeof this.value === 'string') {
-            this._dummyText = this.value;
-            this.value = JSON.parse(this.value);
-          } else {
-            this._dummyText = this.value.toString();
-          }
         }
       },
       listeners: {

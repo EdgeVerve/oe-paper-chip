@@ -78,7 +78,7 @@
         expect(elem.value).to.deep.equal(['IND', 'USA']);
       });
 
-      test('Removing paper chips by clicing icon on paper-chip', function () {
+      test('Removing paper chips by clicking icon on paper-chip', function () {
         var elem = fixture('withvalue');
         forceXIfStamp(elem);
         var chip = elem.querySelectorAll('paper-chip');
@@ -92,7 +92,7 @@
         var input = elem.$.tagInput;
         input.value = 'UK';
         // demo is working fine for max  if we set on element and this.max in _validate function getting the value
-        // But in the test event though we set max  on element this.max in _validate function is undefined
+        // But in the test, even though we set max on element this.max in _validate function is undefined
         // so for this we are manually setting max elem.set('max',2);
         // Need to check
         elem.set('max', 2);
@@ -128,7 +128,6 @@
         MockInteractions.keyDownOn(input, 188);
         expect(elem.value.length).to.equal(3);
         expect(input.value).to.equal('');
-
       });
     });
 
