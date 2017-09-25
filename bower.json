@@ -3,8 +3,8 @@
   "main": "oe-paper-chip.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^1.4.0",
-    "oe-input-error": "^0.9.0",
-    "oe-field-behavior": "^0.9.0",
+    "oe-input-error": "^1.0.0",
+    "oe-field-behavior": "^1.0.0",
     "paper-input": "^1.1.24",
     "iron-input": "^1.0.11",
     "paper-chip": "bendavis78/paper-chip#1.1.1"
