@@ -4,7 +4,7 @@
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../iron-behaviors/iron-control-state.html">
 <link rel="import" href="../paper-chip/paper-chip.html">
 <link rel="import" href="../iron-input/iron-input.html">
@@ -18,28 +18,28 @@ A control for editing an array of strings much like a tags control.
 @demo demo/demo-oe-paper-chip.html
 -->
 <dom-module id="oe-paper-chip">
-  <style>
-    :host {
-      display: block;
-    }
-
-    .tags-input > paper-chip {
-      z-index: 1;
-      margin: 0;
-    }
-
-    span.required {
-      vertical-align: bottom;
-      color: var(--paper-input-container-invalid-color, --google-red-500);
-    }
-
-    paper-input-container {
-      display: inline-block;
-      width: 100%;
-    }
-
-  </style>
   <template>
+    <style>
+        :host {
+          display: block;
+        }
+    
+        .tags-input > paper-chip {
+          z-index: 1;
+          margin: 0;
+        }
+    
+        span.required {
+          vertical-align: bottom;
+          color: var(--paper-input-container-invalid-color, --google-red-500);
+        }
+    
+        paper-input-container {
+          display: inline-block;
+          width: 100%;
+        }
+    </style>
+    <style is="custom-style" include="iron-flex iron-flex-alignment"></style>
     <paper-input-container id="tags" disabled$="[[disabled]]" invalid="[[invalid]]">
       <label hidden$="[[!label]]">
                 <oe-i18n-msg msgid=[[label]]>[[label]]</oe-i18n-msg>
