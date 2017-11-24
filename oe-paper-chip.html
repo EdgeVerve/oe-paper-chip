@@ -124,7 +124,7 @@ A control for editing an array of strings much like a tags control.
             }
           }
           this._dummyText = wouldBeText || this.value;
-        } else if (e.keyCode === 13 || e.keyCode === 9 || (String.fromCharCode(e.keyCode) === this.separator)) {
+        } else if (e.keyCode === 13 || e.keyCode === 9 || ((e.key) === this.separator)) {
           var tagValue = e.target.value ? e.target.value.trim() : '';
 
           if (tagValue !== '') {
