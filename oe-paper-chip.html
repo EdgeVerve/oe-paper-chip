@@ -53,7 +53,7 @@ A control for editing an array of strings much like a tags control.
       <div class="tags-input layout horizontal wrap">
         <template is="dom-repeat" items={{value}}>
           <paper-chip tabindex="-1" removable single-line on-remove="_onremove">
-            <span class="label">{{item}}</span>
+            <span class="label">{{_getValue(item)}}</span>
           </paper-chip>
         </template>
         <input id="tagInput" disabled$="[[disabled]]" type="text" class="flex">
@@ -78,6 +78,9 @@ A control for editing an array of strings much like a tags control.
         separator: {
           type: String,
           value: ','
+        },
+        valueProperty: {
+          type: String
         },
         _dummyText: {
           type: String
@@ -112,7 +115,6 @@ A control for editing an array of strings much like a tags control.
         // var keyCode = e.key || e.keyCode || e.which;
         if (e.keyCode === 8) {
           var wouldBeText = e.target.value;
-          wouldBeText = wouldBeText ? wouldBeText.substr(0, wouldBeText.length - 1) : wouldBeText;
           if (wouldBeText === '') {
             // the string is empty , so remove a chip if present
             if (this.value && this.value.length > 0) {
@@ -123,6 +125,7 @@ A control for editing an array of strings much like a tags control.
               this._validate();
             }
           }
+          wouldBeText = wouldBeText ? wouldBeText.substr(0, wouldBeText.length - 1) : wouldBeText;
           this._dummyText = wouldBeText || this.value;
         } else if (e.keyCode === 13 || e.keyCode === 9 || ((e.key) === this.separator)) {
           var tagValue = e.target.value ? e.target.value.trim() : '';
@@ -130,10 +133,22 @@ A control for editing an array of strings much like a tags control.
           if (tagValue !== '') {
             if (this.value) {
               if (!this.unique || this.value.indexOf(tagValue) < 0) {
-                this.splice('value', this.value.length, 0, tagValue);
+                if (!this.valueProperty) {
+                  this.splice('value', this.value.length, 0, tagValue);
+                } else {
+                  var temp = {};
+                  temp[this.valueProperty] = tagValue;
+                  this.splice('value', this.value.length, 0, temp);
+                }
               }
             } else {
-              this.value = [tagValue];
+              if (!this.valueProperty) {
+                this.value = [tagValue];
+              } else {
+                var temp = {};
+                temp[this.valueProperty] = tagValue;
+                this.value = [temp];
+              }
             }
             this._validate();
           }
@@ -173,6 +188,13 @@ A control for editing an array of strings much like a tags control.
         }
         this.setValidity(isValid, errorKey, placeholders);
         return isValid;
+      },
+      _getValue: function (value) {
+        if (this.valueProperty) {
+          return value[this.valueProperty];
+        } else {
+          return value;
+        }
       },
       get inputElement() {
         return this.$.tagInput;

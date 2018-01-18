@@ -40,6 +40,23 @@
       </template>
     </demo-snippet>
 
+  <demo-snippet>
+    <template is="dom-bind">
+      <oe-paper-chip label="No Values" value-property="code" value="{{value}}"></oe-paper-chip>
+      <template is="dom-repeat" items=[[value]]>
+        <label>[[item]]</label>
+      </template>
+    </template>
+  </demo-snippet>
+  <demo-snippet>
+    <template is="dom-bind">
+      <oe-paper-chip label="No Values" value="{{value}}"></oe-paper-chip>
+      <template is="dom-repeat" items=[[value]]>
+        <label>[[item]]</label>
+      </template>
+    </template>
+  </demo-snippet>
+
     <h3>Validations</h3>
     <demo-snippet>
       <template>
