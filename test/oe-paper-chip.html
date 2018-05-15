@@ -51,6 +51,11 @@
       <oe-paper-chip min="3" value='["IND"]'></oe-paper-chip>
     </template>
   </test-fixture>
+  <test-fixture id="valueProperty">
+    <template>
+      <oe-paper-chip min="3" value-property="country"></oe-paper-chip>
+    </template>
+  </test-fixture>
   <script>
     suite('<oe-paper-chip>', function () {
       test('If not specified, value remains undefined', function () {
@@ -128,6 +133,20 @@
         MockInteractions.keyDownOn(input, null, null, elem.separator);
         expect(elem.value.length).to.equal(3);
         expect(input.value).to.equal('');
+      });
+
+      test('When valueProperty is specified, value should have array of object', function () {
+        var elem = fixture('valueProperty');
+        var input = elem.$.tagInput;
+        input.value = 'IND';
+        MockInteractions.keyDownOn(input, null, null, elem.separator);
+        expect(elem.value.length).to.equal(1);
+        expect(elem.value).to.deep.equal([{country: 'IND'}]);
+
+        input.value = 'USA';
+        MockInteractions.keyDownOn(input, null, null, elem.separator);
+        expect(elem.value.length).to.equal(2);
+        expect(elem.value).to.deep.equal([{country: 'IND'},{country: 'USA'}]);
       });
     });
 
