@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>oe-typeahead-chip test</title>
+
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../node_modules/@polymer/test-fixture/test-fixture.js"></script>
+    <script src="../node_modules/@polymer/test-fixture/test-fixture.js"></script>
+    <script src="../node_modules/chai/chai.js"></script>
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../node_modules/wct-mocha/wct-mocha.js"></script>
+
+    <script src="../node_modules/fakerest/dist/FakeRest.min.js"></script>
+    <script src="../node_modules/sinon/pkg/sinon.js"></script>
+
+    <script type="module" src="../oe-typeahead-chip.js"></script>
+</head>
+
+<body>
+    <test-fixture id="oe-basic">
+        <template>
+            <oe-typeahead-chip></oe-typeahead-chip>
+        </template>
+    </test-fixture>
+
+    <test-fixture id="oe-search">
+        <template>
+            <oe-typeahead-chip displayproperty="description" searchurl="searchmodel/description/SEARCH_STRING"></oe-typeahead-chip>
+        </template>
+    </test-fixture>
+
+    <test-fixture id="oe-required">
+        <template>
+            <oe-typeahead-chip searchurl="searchmodel/description/SEARCH_STRING" required></oe-typeahead-chip>
+        </template>
+    </test-fixture>
+
+    <test-fixture id="oe-imperative">
+        <template>
+            <oe-typeahead-chip searchurl="searchmodel/description/SEARCH_STRING" displayproperty="description"></oe-typeahead-chip>
+        </template>
+    </test-fixture>
+
+    <test-fixture id="oe-strict">
+        <template>
+            <oe-typeahead-chip strict searchurl="searchmodel/description/SEARCH_STRING"></oe-typeahead-chip>
+        </template>
+    </test-fixture>
+
+    <script type="module">
+        import '@polymer/iron-test-helpers/mock-interactions';
+        import { forceXIfStamp } from '@polymer/iron-test-helpers/test-helpers';
+
+        suite('<oe-typeahead-chip>', function () {
+
+            var server;
+            var xhr, requests;
+
+            var modeldata = [{
+                'id': 1,
+                'code': 'IN',
+                'description': 'India'
+            }, {
+                'id': 2,
+                'code': 'IR',
+                'description': 'Ireland'
+            }, {
+                'id': 3,
+                'code': 'ID',
+                'description': 'Indonesia'
+            }, {
+                'id': 12,
+                'code': 'US',
+                'description': 'United States of America'
+            }, {
+                'id': 13,
+                'code': 'UK',
+                'description': 'United Kingdom'
+            }, {
+                'id': 14,
+                'code': 'UG',
+                'description': 'Uganda'
+            }, {
+                'id': 14,
+                'code': 'UR',
+                'description': 'Uruguay'
+            }];
+            var stringdata = [
+                'India',
+                'Ireland',
+                'Indonesia',
+                'United States of America',
+                'United Kingdom',
+                'Uganda',
+                'Uruguay'
+            ];
+
+            setup(function (done) {
+
+                xhr = sinon.useFakeXMLHttpRequest();
+                requests = [];
+                xhr.onCreate = function (req) {
+                    requests.push(req);
+                };
+
+                server = sinon.fakeServer.create();
+                server.autoRespond = true;
+                server.respondImmediately = true;
+                // /.*\/searchmodel\/.*\/.*/,
+                server.respondWith(
+                    'GET',
+                    /searchmodel\/.*\/.*/,
+                    //url ~ search-model/description/Sw
+                    function (req) {
+                        var url = req.url.split('?')[0];
+                        var parts = url.split('/');
+                        var searchField = parts[parts.length - 2];
+                        var searchString = parts[parts.length - 1];
+                        var response = modeldata.filter(function (item) {
+                            return item[searchField].indexOf(searchString) >= 0;
+                        });
+                        req.respond(200, 'application/json', JSON.stringify(response));
+                    }
+                );
+                server.respondWith(
+                    'GET',
+                    /fetch-model\/.*\/.*/,
+                    //url ~ fetch-model/code/CH
+                    function (req) {
+                        var parts = req.url.split('/');
+                        var searchField = parts[1];
+                        var searchString = parts[2];
+                        var response = modeldata.filter(function (item) {
+                            return item[searchField] == (searchString);
+                        });
+                        response = response && response[0];
+
+                        req.respond(200, 'application/json', response ? JSON.stringify(response) : undefined);
+                    }
+                );
+
+                server.respondWith(
+                    'GET',
+                    /search-string\/.*/,
+                    //url ~ typeahead-data/b
+                    function (req) {
+                        var parts = req.url.split('/');
+                        var searchString = parts[1];
+                        var response = stringdata.filter(function (item) {
+                            return item.indexOf(searchString) >= 0;
+                        });
+                        response = response && response[0];
+                        req.respond(200, 'application/json', JSON.stringify(response));
+                    }
+                );
+
+                server.respondWith(
+                    'GET',
+                    /get-string\/.*/,
+                    //url ~ typeahead-data/b
+                    function (req) {
+                        var url = req.url.split('?')[0];
+                        var parts = url.split('/');
+                        //url will look like http://get-string/["India"] so we are removing the '[' ']' and taking the string between
+                        var searchString = parts[3].substr(parts[3].indexOf('["') + 2, parts[3].indexOf('"]') - 2);
+                        var response = stringdata.filter(function (item) {
+                            return item === searchString;
+                        });
+                        req.respond(200, 'application/json', JSON.stringify(response));
+                    }
+                );
+
+                window.customElements.whenDefined("oe-typeahead-chip").then(function () {
+                    HTMLElement.prototype.fire = function (type, detail, options) {
+                        options = options || {};
+                        detail = (detail === null || detail === undefined) ? {} : detail;
+                        let event = new Event(type, {
+                            bubbles: options.bubbles === undefined ? true : options.bubbles,
+                            cancelable: Boolean(options.cancelable),
+                            composed: options.composed === undefined ? true : options.composed
+                        });
+                        event.detail = detail;
+                        let node = options.node || this;
+                        node.dispatchEvent(event);
+                    }
+                    done();
+                })
+
+            });
+            teardown(function () {
+                xhr.restore();
+                server.restore();
+            });
+
+            test('suggestions are fetched and displayed', function (done) {
+                var picker = fixture('oe-search');
+                flush(function () {
+                    picker.debounceDuration = 0;
+                    picker.$.tagInput.value = "I";
+                    picker.$.tagInput.fire('input');
+                    flush(function () {
+                        expect(picker._suggestions).to.be.an('array');
+                        expect(picker._suggestions.length).to.equal(3);
+                        done();
+                    });
+                });
+            });
+
+            test('suggestions should not fetch when we type wrong word', function (done) {
+                var picker = fixture('oe-search');
+                flush(function () {
+                    picker.debounceDuration = 0;
+                    picker.$.tagInput.value = "lmn";
+                    picker.$.tagInput.fire('input');
+
+                    flush(function () {
+                        expect(picker._suggestions).to.be.an('array');
+                        expect(picker._suggestions.length).to.equal(0);
+                        done();
+                    });
+                })
+
+            });
+
+            test('Focus on the chip by pressing back space and remove it', function (done) {
+                var elem = fixture('oe-basic');
+                elem.set('value',["IND","USA","UK"]);
+                flush(function () {
+                    var input = elem.$.tagInput;
+                    MockInteractions.keyDownOn(input, 8);
+                    var chipEl = elem.shadowRoot.querySelectorAll('oe-chip');
+                    MockInteractions.keyDownOn(chipEl[2], 8);
+                    expect(elem.value.length).to.equal(2);
+                    expect(elem.value).to.deep.equal(['IND', 'USA']);
+                    done();
+                });
+            });
+
+            test('focus on paper-item and selecting', function (done) {
+                var picker = fixture('oe-search');
+                flush(function () {
+                    picker.debounceDuration = 0;
+                    picker.$.tagInput.value = "I";
+                    picker.set('displayproperty', 'description');
+                    picker.set('valueproperty', 'code');
+                    picker.$.tagInput.fire('input');
+                    flush(function () {
+                        var menuItems = picker.shadowRoot.querySelectorAll('paper-item');
+                        MockInteractions.keyUpOn(picker.$.tagInput, 40);
+                        MockInteractions.focus(menuItems[1]);
+                        MockInteractions.keyUpOn(picker.$.tagInput, 13);
+                        flush(function () {
+                            var chips = picker.shadowRoot.querySelectorAll('oe-chip');
+                            expect(chips[0].label).to.be.equal('Indonesia');
+                            expect(picker.value.length).to.be.equal(1);
+                            done();
+                        });
+                    });
+                })
+
+            });
+
+            test('fetching the typeahead data', function (done) {
+                var picker = fixture('oe-basic');
+                flush(function () {
+                    picker.set('dataurl', 'http://get-string/VALUE_STRING');
+                    picker.debounceDuration = 0;
+                    picker.$.tagInput.value = "India";
+                    picker.set('value', ['India']);
+                    flush(function () {
+                        expect(picker.value[0]).to.be.equal('India');
+                        expect(picker.value.length).to.be.equal(1);
+                        done();
+                    });
+                })
+
+            });
+
+            test('Clicking on paper-item for selecting', function (done) {
+                var picker = fixture('oe-search');
+                flush(function () {
+                    picker.debounceDuration = 0;
+                    picker.$.tagInput.value = "I";
+                    picker.set('displayproperty', 'description');
+                    picker.set('valueproperty', 'code');
+                    picker.$.tagInput.fire('input');
+                    flush(function () {
+                        var menuItems = picker.shadowRoot.querySelectorAll('paper-item');
+                        MockInteractions.focus(menuItems[2]);
+                        MockInteractions.tap(menuItems[2]);
+                        flush(function () {
+                            var chips = picker.shadowRoot.querySelectorAll('oe-chip');
+                            expect(chips[0].label).to.be.equal('Ireland');
+                            done();
+                        });
+                    });
+                })
+
+            });
+
+            test('Checking for the empty value', function (done) {
+                var picker = fixture('oe-search');
+                flush(function () {
+                    picker.set('displayValue', '');
+                    picker.$.tagInput.value = "";
+                    picker.$.tagInput.fire('input');
+                    flush(function () {
+                        var menuItems = picker.shadowRoot.querySelectorAll('paper-item');
+                        expect(menuItems.length).to.be.equal(0);
+                        done();
+                    });
+                })
+
+            });
+
+            test('Setting Value as an Object, should update the display', function (done) {
+                var picker = fixture('oe-imperative');
+                flush(function () {
+                    picker.set('value', [{
+                        'id': 14,
+                        'code': 'UG',
+                        'description': 'Uganda'
+                    }]);
+                    flush(function () {
+                        var chips = picker.shadowRoot.querySelectorAll('oe-chip');
+                        expect(chips[0].label).to.be.equal('Uganda');
+                        done();
+                    });
+                })
+
+            });
+
+            test('delete chip on mouse click', function (done) {
+                var picker = fixture('oe-basic');
+                flush(function () {
+                    picker.set('dataurl', 'http://get-string/VALUE_STRING');
+                    picker.set('searchString', 'India');
+                    picker.set('value', ['India']);
+                    flush(function () {
+                        expect(picker.value.length).to.be.equal(1);
+                        var ironicon = picker.shadowRoot.querySelector('oe-chip').shadowRoot.querySelector('iron-icon');
+                        MockInteractions.tap(ironicon);
+                        expect(picker.value).to.be.equal(undefined);
+                        done();
+                    });
+                })
+            });
+
+        });
+
+    </script>
+</body>
+
+</html>

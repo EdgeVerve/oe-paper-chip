@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+  <title>oe-typeahead-chip demo</title>
+
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+
+  <script type="module">
+    import '@polymer/iron-demo-helpers/demo-pages-shared-styles';
+    import '@polymer/iron-demo-helpers/demo-snippet';
+    import '@polymer/polymer/lib/elements/dom-bind.js';
+  </script>
+
+  <script type="module" src="../oe-typeahead-chip.js"></script>
+
+  <custom-style>
+    <style is="custom-style" include="demo-pages-shared-styles">
+      .vertical-section-container {
+        max-width: 600px;
+      }
+    </style>
+  </custom-style>
+</head>
+
+<body>
+  <div class="vertical-section-container centered">
+    <h3>Search with unique</h3>
+    <h4>
+      <i>Info: Type 'i' or 'u' letter for countries</i>
+    </h4>
+    <demo-snippet>
+      <template>
+        <dom-bind>
+          <template>
+            <oe-typeahead-chip label="Search Countries" unique displayproperty="description" valueproperty="code"
+              searchurl="../demo/data/country/SEARCH_STRING.json" value="{{value}}">
+            </oe-typeahead-chip>
+          </template>
+        </dom-bind>
+      </template>
+    </demo-snippet>
+
+    <h3>Setting value without dataurl</h3>
+    <h4>
+      <i>Scenario: If there is no valueproperty set, value contains array of object. So value will be stored as array
+        of objects</i>
+    </h4>
+    <demo-snippet>
+      <template>
+        <dom-bind>
+          <template>
+            <oe-typeahead-chip id="country" label="Search Countries" displayproperty="description" searchurl="../demo/data/country/SEARCH_STRING.json"
+              value={{value}}></oe-typeahead-chip>
+            <script>
+               window.customElements.whenDefined("oe-typeahead-chip").then(function(){
+                var el = document.querySelector('#country');
+                el.set('value', [{ "id": 1, "code": "IN", "description": "India" }, { "id": 2, "code": "IR", "description": "Ireland" }]);
+              })
+            </script>
+          </template>
+        </dom-bind>
+      </template>
+    </demo-snippet>
+
+    <h3>Setting value with dataurl</h3>
+    <h4>
+      <i>Info: To set actual api to dataurl property use like - dataurl='api/countries?filter={"where": {"code":
+        {"inq": VALUE_STRING}}}'</i>&nbsp;&nbsp;
+      Example VALUE_STRING would look like ["IN", "IR", "ID"]</h4>
+    <demo-snippet>
+      <template>
+        <dom-bind id="demo-fetch">
+          <template>
+            <oe-typeahead-chip id="fetch" label="Search Countries" 
+            displayproperty="description"
+            valueproperty="code" 
+            searchurl="../demo/data/country/SEARCH_STRING.json"
+            dataurl="../demo/data/country/i.json"
+              value={{value}}></oe-typeahead-chip>
+            <script>
+              window.customElements.whenDefined("oe-typeahead-chip").then(function(){
+                var demoBind = document.getElementById('demo-fetch');
+                demoBind.$.fetch.set('value', ["IN", "IR", "ID"]);
+              })
+            </script>
+          </template>
+        </dom-bind>
+      </template>
+    </demo-snippet>
+
+    <h3>Required</h3>
+    <demo-snippet>
+      <template>
+        <oe-typeahead-chip label="Search Countries" required displayproperty="description" searchurl="../demo/data/country/SEARCH_STRING.json"
+          value={{value}}></oe-typeahead-chip>
+      </template>
+    </demo-snippet>
+
+    <h3>Store value as array of objects</h3>
+    <h4>
+      <i>Info: There might be a scenario where the value should be stored as array of objects. So, to acheive this
+        don't provide
+        valueproperty
+      </i>
+    </h4>
+    <demo-snippet>
+      <template>
+        <dom-bind>
+          <template>
+            <oe-typeahead-chip label="Search Countries" required displayproperty="description" searchurl="../demo/data/country/SEARCH_STRING.json"
+              value={{value}}></oe-typeahead-chip>
+            <template is="dom-repeat" items=[[value]]>
+              ({{item.code}} - {{item.description}})
+            </template>
+          </template>
+        </dom-bind>
+      </template>
+    </demo-snippet>
+
+  </div>
+</body>
+
+</html>
