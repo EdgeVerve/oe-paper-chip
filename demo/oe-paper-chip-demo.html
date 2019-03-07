@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+  <title>oe-paper-chip demo</title>
+
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+
+  <script type="module">
+    import '@polymer/iron-demo-helpers/demo-pages-shared-styles';
+    import '@polymer/iron-demo-helpers/demo-snippet';
+    import '@polymer/polymer/lib/elements/dom-bind.js';
+  </script>
+
+  <script type="module" src="../oe-paper-chip.js"></script>
+
+  <custom-style>
+    <style is="custom-style" include="demo-pages-shared-styles">
+      .vertical-section-container {
+        max-width: 600px;
+      }
+    </style>
+  </custom-style>
+</head>
+
+<body>
+  <div class="vertical-section-container centered">
+    <h3>Paper Chip</h3>
+    <demo-snippet>
+      <template>
+        <oe-paper-chip label="No Values"></oe-paper-chip>
+        <oe-paper-chip label="Initial Values" value='["A","B"]'></oe-paper-chip>
+        <oe-paper-chip label="Only unique values" unique value='["A","B"]'></oe-paper-chip>
+        <oe-paper-chip disabled label="Disabled No Values"></oe-paper-chip>
+        <oe-paper-chip disabled label="Disabled" value='["A","B"]'></oe-paper-chip>
+      </template>
+    </demo-snippet>
+
+    <h3>Objects array using value-property</h3>
+    <demo-snippet>
+      <template>
+        <dom-bind>
+          <template>
+            <oe-paper-chip label="No Values" value-property="code" value="{{value}}"></oe-paper-chip>
+            <template is="dom-repeat" items=[[value]]>
+              <label>[[item]]</label>
+            </template>
+          </template>
+        </dom-bind>
+      </template>
+    </demo-snippet>
+
+    <demo-snippet>
+      <template>
+        <dom-bind>
+          <template>
+            <oe-paper-chip label="No Values" value="{{value}}"></oe-paper-chip>
+            <template is="dom-repeat" items=[[value]]>
+              <label>[[item]]</label>
+            </template>
+          </template>
+        </dom-bind>
+      </template>
+    </demo-snippet>
+
+    <h3>Validations</h3>
+    <demo-snippet>
+      <template>
+        <oe-paper-chip required label="Tags"></oe-paper-chip>
+        <oe-paper-chip error-message="invalidValue" invalid label="Tags" value='["A","B"]'></oe-paper-chip>
+      </template>
+    </demo-snippet>
+
+  </div>
+</body>
+
+</html>

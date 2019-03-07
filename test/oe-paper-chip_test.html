@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>oe-paper-chip test</title>
+
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../node_modules/@polymer/test-fixture/test-fixture.js"></script>
+    <script src="../node_modules/chai/chai.js"></script>
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../node_modules/wct-mocha/wct-mocha.js"></script>
+
+
+
+    <script type="module" src="../oe-paper-chip.js"></script>
+</head>
+
+<body>
+    <test-fixture id="basic">
+        <template>
+            <oe-paper-chip></oe-paper-chip>
+        </template>
+    </test-fixture>
+    <test-fixture id="withvalue">
+        <template>
+            <oe-paper-chip value='["IND","USA","UK"]'></oe-paper-chip>
+        </template>
+    </test-fixture>
+    <test-fixture id="maxValidation">
+        <template>
+            <oe-paper-chip max="2" value='["IND", "USA"]'></oe-paper-chip>
+        </template>
+    </test-fixture>
+    <test-fixture id="unique">
+        <template>
+            <oe-paper-chip unique value='["IND", "USA"]'></oe-paper-chip>
+        </template>
+    </test-fixture>
+    <test-fixture id="minValidation">
+        <template>
+            <oe-paper-chip min="3" value='["IND"]'></oe-paper-chip>
+        </template>
+    </test-fixture>
+    <test-fixture id="valueProperty">
+        <template>
+            <oe-paper-chip min="3" value-property="country"></oe-paper-chip>
+        </template>
+    </test-fixture>
+
+    <script type="module">
+        import '@polymer/iron-test-helpers/mock-interactions';
+
+        import { forceXIfStamp } from '@polymer/iron-test-helpers/test-helpers';
+
+        suite('<oe-paper-chip>', function () {
+
+
+            test('If not specified, value remains undefined', function () {
+                var input = fixture('basic');
+                expect(input.value).to.not.exist;
+            });
+            test('check for datalist', function () {
+                var input = fixture('withvalue');
+                expect(input.value).to.deep.equal(['IND', 'USA', 'UK']);
+            });
+            test('Entering the value inside paper chip', function () {
+                var elem = fixture('basic');
+                var input = elem.$.tagInput;
+                input.value = 'IND';
+                MockInteractions.keyDownOn(input, null, null, elem.separator);
+                expect(elem.value.length).to.equal(1);
+                expect(elem.value).to.deep.equal(['IND']);
+            });
+
+            test('Focus on the chip by pressing back space and remove it', function (done) {
+                var elem = fixture('withvalue');
+                flush(function () {
+                    var input = elem.$.tagInput;
+                    MockInteractions.keyDownOn(input, 8);
+                    var chipEl = elem.shadowRoot.querySelectorAll('oe-chip');
+                    MockInteractions.keyDownOn(chipEl[2], 8);
+                    expect(elem.value.length).to.equal(2);
+                    expect(elem.value).to.deep.equal(['IND', 'USA']);
+                    done();
+                });
+            });
+
+            test('Focus on the chip by pressing back space and navigate the chips', function (done) {
+                var elem = fixture('withvalue');
+                flush(function () {
+                    var input = elem.$.tagInput;
+                    MockInteractions.keyDownOn(input, 8);
+                    flush(function(){
+                        var chipEl = elem.shadowRoot.querySelectorAll('oe-chip');
+                        expect(elem.__focusedChip).to.equal(chipEl[2]); //Third chip focused
+                        MockInteractions.keyDownOn(chipEl[2], 37);       //Left arrow
+                        expect(elem.__focusedChip).to.equal(chipEl[1]); //Second chip focused
+                        MockInteractions.keyDownOn(chipEl[1], 39);       //Right arrow
+                        expect(elem.__focusedChip).to.equal(chipEl[2]); //Third chip focused
+                        MockInteractions.keyDownOn(chipEl[2], 36);       //Home key
+                        expect(elem.__focusedChip).to.equal(chipEl[0]); //First chip focused
+                        MockInteractions.keyDownOn(chipEl[0], 35);       //End key
+                        expect(elem.__focusedChip).to.equal(chipEl[2]); //Third chip focused
+                        MockInteractions.keyDownOn(chipEl[2], 9);       //Tab key
+                        expect(elem.__focusedChip).to.equal(null); //No chip focused
+                        done();
+                    })
+                });
+            });
+
+            test('Removing paper chips by clicking icon on paper-chip', function () {
+                var elem = fixture('withvalue');
+                forceXIfStamp(elem);
+                var chips = elem.shadowRoot.querySelectorAll('oe-chip');
+                var removeBtn = chips[1].shadowRoot.querySelector('.remove-btn');
+                MockInteractions.tap(removeBtn);
+                expect(elem.value.length).to.equal(2);
+                expect(elem.value).to.deep.equal(['IND', 'UK']);
+            });
+
+            test('Basic Validations for max', function () {
+                var elem = fixture('maxValidation');
+                var input = elem.$.tagInput;
+                input.value = 'UK';
+                // demo is working fine for max  if we set on element and this.max in _validate function getting the value
+                // But in the test, even though we set max on element this.max in _validate function is undefined
+                // so for this we are manually setting max elem.set('max',2);
+                // Need to check
+                elem.set('max', 2);
+                input.value = 'UK';
+                MockInteractions.keyDownOn(input, null, null, elem.separator);
+                var error = elem.shadowRoot.querySelector('#i18n-error');
+                assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
+            });
+
+            test('Basic Validations for min', function () {
+                var elem = fixture('minValidation');
+                elem.set('min', 3);
+                var input = elem.$.tagInput;
+                input.value = 'UK';
+                MockInteractions.keyDownOn(input, null, null, elem.separator);
+                var error = elem.shadowRoot.querySelector('#i18n-error');
+                assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
+            });
+
+            test('When unique is specified, only unique values are accepted', function () {
+                var elem = fixture('unique');
+                expect(elem.value.length).to.equal(2);
+
+                var input = elem.$.tagInput;
+                input.value = 'USA';
+                MockInteractions.keyDownOn(input, null, null, elem.separator);
+                expect(elem.value.length).to.equal(2);
+                expect(input.value).to.equal('');
+
+                input.value = 'UAE';
+                MockInteractions.keyDownOn(input, null, null, elem.separator);
+                expect(elem.value.length).to.equal(3);
+                expect(input.value).to.equal('');
+            });
+
+            test('When valueProperty is specified, value should have array of object', function () {
+                var elem = fixture('valueProperty');
+                var input = elem.$.tagInput;
+                input.value = 'IND';
+                MockInteractions.keyDownOn(input, null, null, elem.separator);
+                expect(elem.value.length).to.equal(1);
+                expect(elem.value).to.deep.equal([{ country: 'IND' }]);
+
+                input.value = 'USA';
+                MockInteractions.keyDownOn(input, null, null, elem.separator);
+                expect(elem.value.length).to.equal(2);
+                expect(elem.value).to.deep.equal([{ country: 'IND' }, { country: 'USA' }]);
+            });
+        });
+
+
+    </script>
+</body>
+
+</html>
