@@ -104,7 +104,7 @@ class OePaperChip extends mixinBehaviors([IronFormElementBehavior, PaperInputBeh
         <input is="iron-input" type="hidden">
       </iron-input>
       <div class="tags-input layout horizontal wrap" slot="input">
-        <template is="dom-repeat" items={{value}} id="chip-renderer">
+        <template is="dom-repeat" items={{__getValidValue(value.*)}} id="chip-renderer">
           <oe-chip tabindex="-1" aria-label$="[[_getChipLabel(item)]]" label=[[_getChipLabel(item)]] data-index$="[[index]]" on-keydown="_handleNav" on-remove-chip="_onremove"></oe-chip>
         </template>
         <iron-input class="flex layout vertical center-center" id$="[[_inputId]]">
@@ -157,9 +157,16 @@ class OePaperChip extends mixinBehaviors([IronFormElementBehavior, PaperInputBeh
     };
   }
 
+  static get _invalidValue(){
+    return {};
+  }
+
+
   connectedCallback() {
     super.connectedCallback();
+    this._invalidValue = OePaperChip._invalidValue;
     this.inputElement.firstElementChild.addEventListener('keydown', this._keyDown.bind(this));
+    this.inputElement.firstElementChild.addEventListener('blur',this._addToTag.bind(this));
   }
 
   /**
@@ -184,30 +191,7 @@ class OePaperChip extends mixinBehaviors([IronFormElementBehavior, PaperInputBeh
       wouldBeText = wouldBeText ? wouldBeText.substr(0, wouldBeText.length - 1) : wouldBeText;
       this._dummyText = wouldBeText || this.value;
     } else if (e.keyCode === 13 || e.keyCode === 9 || ((e.key) === this.separator)) {
-      var tagValue = e.target.value ? e.target.value.trim() : '';
-
-      if (tagValue !== '') {
-        var temp = {};
-        if (this.value) {
-          if (!this.unique || this.value.indexOf(tagValue) < 0) {
-            if (!this.valueProperty) {
-              this.splice('value', this.value.length, 0, tagValue);
-            } else {
-              temp[this.valueProperty] = tagValue;
-              this.splice('value', this.value.length, 0, temp);
-            }
-          }
-        } else {
-          if (!this.valueProperty) {
-            this.value = [tagValue];
-          } else {
-            temp[this.valueProperty] = tagValue;
-            this.value = [temp];
-          }
-        }
-        this._validate();
-      }
-      e.target.value = '';
+      this._addToTag();
       /* prevent default for separator key */
       !(e.keyCode === 13 || e.keyCode === 9) && e.preventDefault();
 
@@ -271,6 +255,35 @@ class OePaperChip extends mixinBehaviors([IronFormElementBehavior, PaperInputBeh
     this.set('__focusedChip',newEl);
   }
 
+  _addToTag(){
+    var tagValue = this.$.tagInput.value.trim();
+    if(tagValue.length === 0){
+      return;
+    }
+    var temp = {};
+    if (this.value && this.value !== this._invalidValue) {
+      if (!this.unique || this.value.indexOf(tagValue) < 0) {
+        if (!this.valueProperty) {
+          this.splice('value', this.value.length, 0, tagValue);
+        } else {
+          temp[this.valueProperty] = tagValue;
+          this.splice('value', this.value.length, 0, temp);
+        }
+      }
+    } else {
+      var arr = [];
+      if (!this.valueProperty) {
+        arr.push(tagValue);
+      } else {
+        temp[this.valueProperty] = tagValue;
+        arr.push(temp);
+      }
+      this.value = arr;
+    }
+    this.$.tagInput.value = '';
+    this._validate();
+  }
+
   /**
    * Removes the selected chip item.
    * 
@@ -284,10 +297,19 @@ class OePaperChip extends mixinBehaviors([IronFormElementBehavior, PaperInputBeh
     this._validate();
   }
 
+  __getValidValue(valueChange){
+    if(this.value && Array.isArray(this.value)){
+      return this.value.slice();
+    }
+  }
+
   /**
    * Observer on value change to handle label float.
    */
   _valueChanged(newVal, oldVal) {
+    if(this.value === this._invalidValue){
+      return;
+    }
     if (newVal) {
       if (typeof newVal === 'string') {
         this.value = JSON.parse(newVal);
@@ -296,7 +318,9 @@ class OePaperChip extends mixinBehaviors([IronFormElementBehavior, PaperInputBeh
       }
     } else {
       this._dummyText = '';
+      this.$.tagInput.value = '';
     }
+    this._validate();
   }
 
   /**
@@ -321,6 +345,9 @@ class OePaperChip extends mixinBehaviors([IronFormElementBehavior, PaperInputBeh
       placeholders = [this.min];
     }
     this.setValidity(isValid, errorKey, placeholders);
+    if(!this.value && !isValid){
+      this.value = this._invalidValue;
+    }
     return isValid;
   }
 

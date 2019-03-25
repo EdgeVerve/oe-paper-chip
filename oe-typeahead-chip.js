@@ -159,6 +159,7 @@ class OeTypeaheadChip extends OEAjaxMixin(OePaperChip) {
 
     constructor() {
         super();
+        this._invalidValue = OeTypeaheadChip._invalidValue;
         this._selectedItems = [];
     }
 
@@ -176,17 +177,26 @@ class OeTypeaheadChip extends OEAjaxMixin(OePaperChip) {
         return ["_valueListChanged(value.*)"];
     }
 
+    static get _invalidValue(){
+        return {};
+    }
+
     /**
      * Sets the _dummyText based on the length of 'value' property.
      * This inturn handles the label float of the input.
      * @param {changeObject} delta 
      */
     _valueListChanged(delta) {
+        if(this.value === this._invalidValue){
+            return;
+        }
         if (this.value && this.value.length > 0) {
             this.set("_dummyText", this.value.toString());
         } else {
             this.set("_dummyText", "");
+            this.$.tagInput.value = "";
         }
+        this.validate();
     }
 
     /**
@@ -403,7 +413,7 @@ class OeTypeaheadChip extends OEAjaxMixin(OePaperChip) {
     _validate() {
 
         var isValid = true;
-        if (this._dummyText) {
+        if (this.$.tagInput.value) {
             this.setValidity(false, 'no-matching-records');
             isValid = false;
         } else if (this.required && !this.value) {
@@ -412,6 +422,11 @@ class OeTypeaheadChip extends OEAjaxMixin(OePaperChip) {
         } else if (this.required && this.value) {
             this.setValidity(true);
         }
+
+        if(!this.value && !isValid){
+            this.value = this._invalidValue;
+        }
+
         return isValid;
     }
 
