@@ -2,11 +2,11 @@
   "name": "oe-paper-chip",
   "description": "A template element , used to create oe-ui Polymer 3 elements",
   "main": "oe-paper-chip.js",
+  "version": "2.0.0",
   "scripts": {
     "test": "polymer test --module-resolution node --skip-selenium-install",
     "lint": "eslint .",
-    "doc": "polymer analyze *.js > analysis.json",
-    "version": "2.0.0"
+    "doc": "polymer analyze *.js > analysis.json"
   },
   "dependencies": {
     "@polymer/iron-dropdown": "3.0.1",
