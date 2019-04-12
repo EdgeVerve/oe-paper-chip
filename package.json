@@ -5,9 +5,9 @@
   "scripts": {
     "test": "polymer test --module-resolution node --skip-selenium-install",
     "lint": "eslint .",
-    "doc": "polymer analyze *.js > analysis.json",
-    "version": "2.0.0"
+    "doc": "polymer analyze *.js > analysis.json"    
   },
+  "version": "2.0.0",
   "dependencies": {
     "@polymer/iron-dropdown": "3.0.1",
     "@polymer/iron-icon": "3.0.1",
