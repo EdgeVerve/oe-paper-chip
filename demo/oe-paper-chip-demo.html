@@ -46,7 +46,7 @@
           <template>
             <oe-paper-chip label="No Values" value-property="code" value="{{value}}"></oe-paper-chip>
             <template is="dom-repeat" items=[[value]]>
-              <label>[[item]]</label>
+              <label>[[item.code]]</label>
             </template>
           </template>
         </dom-bind>
